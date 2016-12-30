@@ -8,5 +8,10 @@
     "start": "node server.js"
   },
   "author": "gopal",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "async": "^2.1.4",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1"
+  }
 }
