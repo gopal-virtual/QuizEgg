@@ -1,76 +1,66 @@
 var express = require('express');
+var multer = require('multer');
 var app = express();
 var fs = require("fs");
 var async = require('async');
-
-// app.post('/addUser', function (req, res) {
-//    var jsonString = '';
-//
-//     req.on('data', function (data) {
-//         jsonString += data;
-//     });
-//
-//     req.on('end', function () {
-//         fs.readFile( __dirname + "/" + "localisation.json", 'utf8', function (err, data) {
-//             data = JSON.parse( data );
-//             data["user5"] = JSON.parse(jsonString);
-//             console.log( data );
-//             res.end(JSON.stringify(data));
-//         });
-//     });
-// })
-
-// app.delete('/deleteUser', function (req, res) {
-//    fs.readFile( __dirname + "/" + "localisation.json", 'utf8', function (err, data) {
-//        data = JSON.parse( data );
-//        delete data["user" + req.query.id];
-//
-//        console.log( data );
-//        res.end( JSON.stringify(data));
-//    });
-// })
-
-// app.get('user/:id', function (req, res) {
-//    // First read existing localisation.
-//    fs.readFile( __dirname + "/" + "localisation.json", 'utf8', function (err, data) {
-//        localisation = JSON.parse( data );
-//        var user = localisation["user" + req.params.id]
-//        console.log( user );
-//        res.end( JSON.stringify(user));
-//    });
-// })
-
+// read file
 app.get('/get/json', function(req, res) {
     var dir = './db/';
-    var json = [];
-    res.writeHead(200, {"Content-Type": "text/json"});
-    fs.readdir(dir, (err, files) => {
-    //   files.forEach(file => {
-        //   fs.readFile(dir + "" +file, 'utf8', function(err, data) {
-        //       console.log(data);
-        //       json.push(JSON.parse(data))
-        //   });
-    //   });
-    //   res.end(JSON.stringify(json));
-        async.eachSeries(
-            // Pass items to iterate over
-            files,
-            // Pass iterator function that is called for each item
-            function(filename) {
-                fs.readFile(dir+""+filename, function(err, content) {
-                    if (!err) {
-                        res.write(content);
-                    }
-                });
-            },
-            // Final callback after each item has been iterated over.
-            function(err) {
-                res.end()
-            }
-        );
-    })
-
+    readAllFile(dir, res);
 })
+function readAllFile(dir, response) {
+  response.writeHead(200, {"Content-Type": "text/json"});
+  var data = {};
+  fs.readdir(dir, (err, files) => {
+      console.log(files);
+      async.eachSeries(
+          files,
+          function(filename, cb) {
+              fs.readFile(dir+filename, function(err, content) {
+                  if (!err) {
+                      var filecontent = JSON.parse(content);
+                      for(key in filecontent){
+                          if(filecontent.hasOwnProperty(key)){
+                              data[key] = filecontent[key]
+                          }
+                      }
+                  }
+                  cb(err);
+              });
+          },
+          function(err) {
+              response.end(JSON.stringify(data))
+          }
+      )
+  })
+}
+// end read file
+//upload code
+var storage =   multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, './uploads');
+  },
+  filename: function (req, file, callback) {
+    callback(null, file.fieldname + '-' + Date.now());
+  }
+});
+var upload = multer({ storage : storage}).single('userPhoto');
+
+app.get('/',function(req,res){
+      res.sendFile(__dirname + "/index.html");
+});
+
+app.post('/api/file',function(req,res){
+    upload(req,res,function(err) {
+        if(err) {
+            return res.end("Error uploading file.");
+        }
+        // file details to be used after upload
+        console.log(req.file)
+        res.end("File is uploaded");
+    });
+});
+//upload end
 app.post('/add/module', function(req, res) {
     var jsonString = '';
 
@@ -115,7 +105,7 @@ app.put('/update/audio', function(req, res) {
     });
 })
 
-var server = app.listen(8081, '127.0.0.1', function() {
+var server = app.listen(3000, 'localhost', function() {
 
     var host = server.address().address
     var port = server.address().port

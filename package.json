@@ -12,6 +12,7 @@
   "devDependencies": {
     "async": "^2.1.4",
     "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.1"
+    "gulp-concat": "^2.6.1",
+    "multer": "^1.2.1"
   }
 }
