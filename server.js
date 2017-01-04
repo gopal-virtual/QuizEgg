@@ -69,7 +69,7 @@ function addModule(req, res) {
                     // handle error
                     if (err) {
                         if (err.code === "EEXIST") {
-                            console.error('myfile already exists');
+                            res.end(JSON.stringify({error : 'file already exists'}));
                             return;
                         } else {
                             throw err;
