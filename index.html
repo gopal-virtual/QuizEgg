@@ -4,14 +4,74 @@
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
+    <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css">
+    <script type="text/javascript" src="/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/angular/angular.min.js"></script>
+    <script type="text/javascript" src="/client.js"></script>
 </head>
 
-<body>
-    <form id="uploadForm" enctype="multipart/form-data" action="/api/photo" method="post">
-        <input type="file" name="userPhoto" />
-        <input type="submit" value="Upload Image" name="submit">
-    </form>
-
+<body ng-app="localisedAudio" ng-controller="LocalisedController as localCtrl">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-xs-12 col-md-12 col-lg-12">
+                <h1>Localisation Audio</h1>
+                <div class="btn-group pull-right">
+                    <a target="_blank" href="/get/json" class="btn btn-primary btn-small">Get Data</a>
+                    <a target="_blank" href="/download" class="btn btn-success btn-small">Download all audios</a>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" ng-repeat="(moduleKey, moduleValue) in ::localCtrl.localisedAudio">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h5>Page : <strong ng-bind="::moduleKey"></strong></h5>
+                    </div>
+                    <div class="panel-body">
+                        <div ng-repeat="(audioKey, audioValue) in ::moduleValue">
+                            <h5 ng-bind="::audioValue.label"></h5>
+                            <div class="list-group">
+                                <div class="list-group-item" ng-repeat="(langKey, langPath) in ::audioValue.lang">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox">
+                                            <span class="label label-primary" ng-bind="::langKey"></span> <span ng-bind="::langPath"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="list-group-item">
+                                    <form id="uploadForm" ng-submit="localCtrl.uploadAudio(moduleKey, audioKey)">
+                                        <div class="form-group">
+                                            <select ng-model="localCtrl.audio.language">
+                                                <option ng-repeat="language in ::['hindi','tamil','telugu','bengali']" ng-bind="::language" value="{{::language}}"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="file" onchange="angular.element(this).scope().localCtrl.audio.file=this.files"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="btn btn-primary btn-sm" type="submit" value="Upload Audio" name="submit">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group pull-right">
+                            <button class="btn btn-default">delete</button>
+                            <button class="btn btn-default">add</button>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

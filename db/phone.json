@@ -1,1 +1,12 @@
-{"phone":{"type number":{"label":"Type your phone number","hin":"sound/hin-type_your_phone_number_30122016.mp3"}}}
+{
+    "phone": {
+        "type number": {
+            "label": "Type your phone number",
+            "lang": {
+                "hindi": "1483538404400-sound.mp3",
+                "telugu": "1483538607880-Dbs splash screen.png",
+                "bengali": "1483538355948-en_hi_paper.mp3"
+            }
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "ed-localisation",
+  "description": "localisation interface for english duniya",
+  "main": "server.js",
+  "authors": [
+    "gopal"
+  ],
+  "license": "ISC",
+  "moduleType": [],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

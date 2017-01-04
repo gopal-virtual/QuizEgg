@@ -11,8 +11,8 @@
   "license": "ISC",
   "devDependencies": {
     "async": "^2.1.4",
-    "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.1",
+    "bower": "^1.8.0",
+    "express-zip": "^2.0.1",
     "multer": "^1.2.1"
   }
 }
