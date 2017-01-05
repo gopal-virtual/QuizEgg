@@ -46,6 +46,11 @@
     function LocalisedController($http, fileUpload) {
         var localCtrl = this;
         localCtrl.uploadAudio = uploadAudio;
+        localCtrl.addSoundModule = addSoundModule;
+        localCtrl.showAddAudioPanel = showAddAudioPanel;
+        localCtrl.removeAudio = removeAudio;
+        localCtrl.addModule = addModule;
+
         $http({
             method: 'GET',
             url: '/get/json'
@@ -56,20 +61,78 @@
             console.log(response)
         });
 
-        function uploadAudio(moduleKey, audioKey) {
-            fileUpload.uploadFileToUrl(localCtrl.audio.file, "/api/file")
+        function addModule (moduleName) {
+            var data = {};
+            data[moduleName] = {};
+            return $http({
+                method: 'POST',
+                url: '/add/module',
+                data : data
+            }).then(function(response){
+                localCtrl.localisedAudio[moduleName] = response.data[moduleName];
+                console.log("Success : ", response)
+                $('#moduleModal').modal('hide')
+            })
+        }
+
+        function removeAudio(moduleKey, audioKey, langKey) {
+
+            return $http({
+                method: 'DELETE',
+                url: '/delete/sound',
+                data : {
+                    module : moduleKey,
+                    audio : audioKey,
+                    lang : langKey
+                }
+            }).then(function(response){
+                delete localCtrl.localisedAudio[moduleKey][audioKey]["lang"][langKey];
+                console.log("Success : ", response)
+            })
+        }
+
+        function uploadAudio(moduleKey, audioKey, language) {
+            fileUpload.uploadFileToUrl(localCtrl.audio.file, "/add/file")
             .then(function(response){
                 return $http({
                     method: 'PUT',
-                    url: '/update/audio',
+                    url: '/add/langaudio',
                     data : {
                         module : moduleKey,
                         audio : audioKey,
-                        language : localCtrl.audio.language,
+                        language : language,
                         filename : response.data.filename
                     }
                 })
             })
+            .then(function(response){
+                console.log(response.data)
+                $('#'+audioKey).collapse('toggle');
+                localCtrl.localisedAudio[moduleKey][audioKey]["lang"][language] = response.data[moduleKey][audioKey]["lang"][language];
+            })
+        }
+
+        function addSoundModule(soundModule) {
+            var data = {}
+            data["module"] = soundModule.moduleName;
+            data["soundModule"] = {};
+            data.soundModule[soundModule.soundKey] = {
+                label : soundModule.label,
+                lang : {}
+            }
+            return $http({
+                method: 'PUT',
+                url: '/add/soundmodule',
+                data : data
+            }).then(function(response){
+                localCtrl.localisedAudio[soundModule.moduleName] = response.data[soundModule.moduleName];
+                console.log("Success : ", response)
+                $('#soundModal').modal('hide')
+            })
+        }
+
+        function showAddAudioPanel(id) {
+            $('#'+id).collapse('toggle');
         }
     }
 })();

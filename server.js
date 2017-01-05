@@ -6,12 +6,16 @@ var async = require('async');
 var zip = require('express-zip');
 app.use(express.static(__dirname + '/bower_components'));
 app.use(express.static(__dirname + '/client'));
-// download zip
-app.get('/download', downloadFile);
-app.get('/get/json', getJson);
-app.post('/api/file', uploadFile);
+app.use(express.static(__dirname + '/uploads'));
+// private
 app.post('/add/module', addModule);
-app.put('/update/audio', updateAudio);
+app.put('/add/soundmodule', addSoundModule);
+// public
+app.get('/download', downloadFile);
+app.delete('/delete/sound', deleteSound);
+app.get('/get/json', getJson);
+app.post('/add/file', uploadFile);
+app.put('/add/langaudio', addLangAudio);
 app.get('/', home);
 
 var server = app.listen(3000, 'localhost', function() {
@@ -26,8 +30,64 @@ var server = app.listen(3000, 'localhost', function() {
 function home(req,res){
       res.sendFile(__dirname + "/index.html");
 }
+function deleteSound (req, res){
+    var jsonString = '';
 
-function updateAudio(req, res) {
+    req.on('data', function(data) {
+        jsonString += data;
+    });
+
+    req.on('end', function() {
+        soundData = JSON.parse(jsonString);
+        var file = "./db/"+soundData.module+".json";
+        fs.readFile(file, 'utf8', function(err, data) {
+            data = JSON.parse(data);
+            var filePath = "./uploads/"+ data[soundData.module][soundData.audio]["lang"][soundData.lang];
+            delete data[soundData.module][soundData.audio]["lang"][soundData.lang];
+            console.log(data)
+            fs.writeFile(file, JSON.stringify(data), 'utf8', function(err) {
+                if(err) {
+                    res.end(JSON.stringify({"error" : err}));
+                }
+                else{
+                    fs.unlink(filePath, (err) => {
+                      if (err) throw err;
+                      console.log('successfully deleted'+filePath);
+                      res.end(JSON.stringify(data));
+                    });
+                }
+            })
+        });
+    });
+}
+function addSoundModule (req, res) {
+    var jsonString = '';
+
+    req.on('data', function(data) {
+        jsonString += data;
+    });
+
+    req.on('end', function() {
+        soundData = JSON.parse(jsonString);
+        var file = "./db/"+soundData.module+".json";
+        fs.readFile(file, 'utf8', function(err, data) {
+            data = JSON.parse(data);
+            for(var sound in soundData.soundModule){
+                data[soundData.module][sound] = soundData.soundModule[sound];
+            }
+            console.log(data)
+            fs.writeFile(file, JSON.stringify(data), 'utf8', function(err) {
+                if(err) {
+                    res.end(JSON.stringify({"error" : err}));
+                }
+                else{
+                    res.end(JSON.stringify(data));
+                }
+            })
+        });
+    });
+}
+function addLangAudio(req, res) {
     // get module name, audio key, language key from request
     var jsonString = '';
 
@@ -37,7 +97,6 @@ function updateAudio(req, res) {
 
     req.on('end', function() {
         audioData = JSON.parse(jsonString);
-        console.log('module',"./db/"+audioData.module+".json");
         var file = "./db/"+audioData.module+".json";
         fs.readFile(file, 'utf8', function(err, data) {
             data = JSON.parse(data);
@@ -53,7 +112,6 @@ function updateAudio(req, res) {
         });
     });
 }
-
 function addModule(req, res) {
     var jsonString = '';
 
@@ -67,6 +125,7 @@ function addModule(req, res) {
             if (audioData.hasOwnProperty(module)) {
                 fs.open('./db/' + module + '.json', "wx", function(err, fd) {
                     // handle error
+                    console.log('creating : ',audioData)
                     if (err) {
                         if (err.code === "EEXIST") {
                             res.end(JSON.stringify({error : 'file already exists'}));
@@ -91,19 +150,15 @@ function addModule(req, res) {
         }
     });
 }
-
 function uploadFile(req,res){
     upload(req,res,function(err) {
         if(err) {
-            console.log("error uploading file : ", err)
             return res.end("Error uploading file.");
         }
         // file details to be used after upload
-        console.log(req.file)
         res.end(JSON.stringify(req.file));
     });
 }
-
 function getJson(req, res) {
     var dir = './db/';
     readAllFile(dir, res);
@@ -124,7 +179,6 @@ function readAllFile(dir, response) {
   response.writeHead(200, {"Content-Type": "text/json"});
   var data = {};
   fs.readdir(dir, (err, files) => {
-      console.log(files);
       async.eachSeries(
           files,
           function(filename, cb) {
@@ -151,7 +205,6 @@ var storage =   multer.diskStorage({
     callback(null, './uploads');
   },
   filename: function (req, file, callback) {
-    console.log(file);
     callback(null, Date.now() + '-' + file.originalname);
   }
 });

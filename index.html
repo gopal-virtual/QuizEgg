@@ -3,21 +3,79 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>Localised Audio</title>
     <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css">
     <script type="text/javascript" src="/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript" src="/bootstrap/dist/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/angular/angular.min.js"></script>
     <script type="text/javascript" src="/client.js"></script>
+    <style>
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 
 <body ng-app="localisedAudio" ng-controller="LocalisedController as localCtrl">
+    <!-- Modal -->
+    <div class="modal fade" id="soundModal" tabindex="-1" role="dialog" aria-labelledby="soundModalLabel">
+        <div class="modal-dialog" role="document">
+            <form class="modal-content" ng-submit="localCtrl.addSoundModule(localCtrl.soundModule)">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="soundModalLabel">Add individual sound in the module</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="moduleName">Module</label>
+                        <input ng-disabled="1" ng-model="localCtrl.soundModule.moduleName" id="moduleName" type="text" class="form-control" placeholder="Module name">
+                    </div>
+                    <div class="form-group">
+                        <label for="soundKey">Sound Key</label>
+                        <input ng-model="localCtrl.soundModule.soundKey" id="soundKey" type="text" class="form-control" placeholder="Sound key">
+                    </div>
+                    <div class="form-group">
+                        <label for="displayText">Display text</label>
+                        <input ng-model="localCtrl.soundModule.label" id="displayText" type="text" class="form-control" placeholder="Display text">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <input type="submit" value="Save changes" class="btn btn-primary">
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal fade" id="moduleModal" tabindex="-1" role="dialog" aria-labelledby="moduleModalLabel">
+        <div class="modal-dialog" role="document">
+            <form class="modal-content" ng-submit="localCtrl.addModule(localCtrl.module.name)">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="moduleModalLabel">Add module</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="modulename">Module name</label>
+                        <input ng-model="localCtrl.module.name" id="modulename" type="text" class="form-control" placeholder="Module name">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <input type="submit" value="Save changes" class="btn btn-primary">
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- End Modal -->
     <div class="container">
         <div class="row">
             <div class="col-sm-12 col-xs-12 col-md-12 col-lg-12">
                 <h1>Localisation Audio</h1>
                 <div class="btn-group pull-right">
+                    <button class="btn btn-default btn-small" data-toggle="modal" data-target="#moduleModal" >All Module</button>
                     <a target="_blank" href="/get/json" class="btn btn-primary btn-small">Get Data</a>
                     <a target="_blank" href="/download" class="btn btn-success btn-small">Download all audios</a>
                 </div>
@@ -26,47 +84,51 @@
         </div>
         <hr />
         <div class="row">
-            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" ng-repeat="(moduleKey, moduleValue) in ::localCtrl.localisedAudio">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" ng-repeat="(moduleKey, moduleValue) in localCtrl.localisedAudio">
                 <div class="panel panel-default">
                     <div class="panel-heading">
+                        <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#soundModal" ng-click="localCtrl.soundModule.moduleName = moduleKey"><i class="glyphicon glyphicon-plus"></i> Audio section</button>
                         <h5>Page : <strong ng-bind="::moduleKey"></strong></h5>
                     </div>
                     <div class="panel-body">
-                        <div ng-repeat="(audioKey, audioValue) in ::moduleValue">
+                        <div ng-repeat="(audioKey, audioValue) in moduleValue">
                             <h5 ng-bind="::audioValue.label"></h5>
                             <div class="list-group">
-                                <div class="list-group-item" ng-repeat="(langKey, langPath) in ::audioValue.lang">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox">
-                                            <span class="label label-primary" ng-bind="::langKey"></span> <span ng-bind="::langPath"></span>
-                                        </label>
+                                <div class="list-group-item truncate" ng-repeat="(langKey, langPath) in audioValue.lang">
+                                    <i class="glyphicon glyphicon-remove-sign text-danger pull-right" ng-click="localCtrl.removeAudio(moduleKey, audioKey, langKey)"></i>
+                                    <span class="label label-primary" ng-bind="::langKey"></span>
+                                    <span ng-bind="langPath"></span>
+                                    <div>
+                                        <audio controls>
+                                            <source ng-src="{{::'/'+langPath}}" type="audio/mp3"> Your browser does not support the audio element.
+                                        </audio>
                                     </div>
                                 </div>
                                 <div class="list-group-item">
-                                    <form id="uploadForm" ng-submit="localCtrl.uploadAudio(moduleKey, audioKey)">
-                                        <div class="form-group">
-                                            <select ng-model="localCtrl.audio.language">
-                                                <option ng-repeat="language in ::['hindi','tamil','telugu','bengali']" ng-bind="::language" value="{{::language}}"></option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <input type="file" onchange="angular.element(this).scope().localCtrl.audio.file=this.files"/>
-                                        </div>
-                                        <div class="form-group">
-                                            <input class="btn btn-primary btn-sm" type="submit" value="Upload Audio" name="submit">
-                                        </div>
-                                    </form>
+                                    <button class="btn btn-default btn-sm pull-right" type="button" ng-click="localCtrl.showAddAudioPanel(audioKey)">
+                                        <i class="glyphicon glyphicon-plus"></i> Audio
+                                    </button>
+                                    <div class="clearfix"></div>
+                                    <div class="collapse" id="{{audioKey}}">
+                                        <form id="uploadForm" ng-submit="localCtrl.uploadAudio(moduleKey, audioKey, localCtrl.audio.language)">
+                                            <div class="form-group">
+                                                <label>Select Language</label>
+                                                <select ng-model="localCtrl.audio.language">
+                                                    <option ng-repeat="language in ::['hindi','tamil','telugu','bengali']" ng-bind="::language" value="{{::language}}"></option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Upload audio file</label>
+                                                <input type="file" onchange="angular.element(this).scope().localCtrl.audio.file=this.files" />
+                                            </div>
+                                            <div class="form-group">
+                                                <input class="btn btn-primary btn-sm" type="submit" value="Upload Audio" name="submit">
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="panel-footer">
-                        <div class="btn-group pull-right">
-                            <button class="btn btn-default">delete</button>
-                            <button class="btn btn-default">add</button>
-                        </div>
-                        <div class="clearfix"></div>
                     </div>
                 </div>
             </div>
