@@ -90,7 +90,7 @@
                         <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#soundModal" ng-click="localCtrl.soundModule.moduleName = moduleKey"><i class="glyphicon glyphicon-plus"></i> Audio section</button>
                         <h5>Page : <strong ng-bind="::moduleKey"></strong></h5>
                     </div>
-                    <div class="panel-body" id="{{moduleKey}}">
+                    <div class="panel-body" id="{{localCtrl.removeSpace(moduleKey)}}">
                         <div ng-repeat="(audioKey, audioValue) in moduleValue">
                             <h5 ng-bind="::audioValue.label"></h5>
                             <div class="list-group">
@@ -105,11 +105,11 @@
                                     </div>
                                 </div>
                                 <div class="list-group-item">
-                                    <button class="btn btn-default btn-sm pull-right" type="button" ng-click="localCtrl.toggleCollapsed(audioKey)">
+                                    <button class="btn btn-default btn-sm pull-right" type="button" ng-click="localCtrl.toggleCollapsed(localCtrl.removeSpace(moduleKey+audioKey))">
                                         <i class="glyphicon glyphicon-plus"></i> Audio
                                     </button>
                                     <div class="clearfix"></div>
-                                    <div class="collapse" id="{{audioKey}}">
+                                    <div class="collapse" id="{{localCtrl.removeSpace(moduleKey+audioKey)}}">
                                         <form id="uploadForm" ng-submit="localCtrl.uploadAudio(moduleKey, audioKey, localCtrl.audio.language)">
                                             <div class="form-group">
                                                 <label>Select Language</label>

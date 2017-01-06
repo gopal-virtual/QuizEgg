@@ -50,6 +50,7 @@
         localCtrl.toggleCollapsed = toggleCollapsed;
         localCtrl.removeAudio = removeAudio;
         localCtrl.addModule = addModule;
+        localCtrl.removeSpace = removeSpace;
 
         $http({
             method: 'GET',
@@ -61,6 +62,9 @@
             console.log(response)
         });
 
+        function removeSpace (string) {
+            return string.replace(/\s+/g, '');
+        }
         function addModule (moduleName) {
             var data = {};
             data[moduleName] = {};
