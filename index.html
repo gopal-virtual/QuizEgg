@@ -75,7 +75,7 @@
             <div class="col-sm-12 col-xs-12 col-md-12 col-lg-12">
                 <h1>Localisation Audio</h1>
                 <div class="btn-group pull-right">
-                    <button class="btn btn-default btn-small" data-toggle="modal" data-target="#moduleModal" >All Module</button>
+                    <button class="btn btn-default btn-small" data-toggle="modal" data-target="#moduleModal" >Add Module</button>
                     <a target="_blank" href="/get/json" class="btn btn-primary btn-small">Get Data</a>
                     <a target="_blank" href="/download" class="btn btn-success btn-small">Download all audios</a>
                 </div>
@@ -90,7 +90,7 @@
                         <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#soundModal" ng-click="localCtrl.soundModule.moduleName = moduleKey"><i class="glyphicon glyphicon-plus"></i> Audio section</button>
                         <h5>Page : <strong ng-bind="::moduleKey"></strong></h5>
                     </div>
-                    <div class="panel-body">
+                    <div class="panel-body" id="{{moduleKey}}">
                         <div ng-repeat="(audioKey, audioValue) in moduleValue">
                             <h5 ng-bind="::audioValue.label"></h5>
                             <div class="list-group">
@@ -105,7 +105,7 @@
                                     </div>
                                 </div>
                                 <div class="list-group-item">
-                                    <button class="btn btn-default btn-sm pull-right" type="button" ng-click="localCtrl.showAddAudioPanel(audioKey)">
+                                    <button class="btn btn-default btn-sm pull-right" type="button" ng-click="localCtrl.toggleCollapsed(audioKey)">
                                         <i class="glyphicon glyphicon-plus"></i> Audio
                                     </button>
                                     <div class="clearfix"></div>
@@ -117,12 +117,14 @@
                                                     <option ng-repeat="language in ::['hindi','tamil','telugu','bengali']" ng-bind="::language" value="{{::language}}"></option>
                                                 </select>
                                             </div>
-                                            <div class="form-group">
-                                                <label>Upload audio file</label>
-                                                <input type="file" onchange="angular.element(this).scope().localCtrl.audio.file=this.files" />
-                                            </div>
-                                            <div class="form-group">
-                                                <input class="btn btn-primary btn-sm" type="submit" value="Upload Audio" name="submit">
+                                            <div ng-show="localCtrl.audio.language">
+                                                <div class="form-group">
+                                                    <label>Upload audio file</label>
+                                                    <input type="file" onchange="angular.element(this).scope().localCtrl.audio.file=this.files" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <input class="btn btn-primary btn-sm" type="submit" value="Upload Audio" name="submit">
+                                                </div>
                                             </div>
                                         </form>
                                     </div>

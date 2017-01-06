@@ -47,7 +47,7 @@
         var localCtrl = this;
         localCtrl.uploadAudio = uploadAudio;
         localCtrl.addSoundModule = addSoundModule;
-        localCtrl.showAddAudioPanel = showAddAudioPanel;
+        localCtrl.toggleCollapsed = toggleCollapsed;
         localCtrl.removeAudio = removeAudio;
         localCtrl.addModule = addModule;
 
@@ -72,6 +72,8 @@
                 localCtrl.localisedAudio[moduleName] = response.data[moduleName];
                 console.log("Success : ", response)
                 $('#moduleModal').modal('hide')
+            }, function(error){
+                console.log(error)
             })
         }
 
@@ -88,6 +90,8 @@
             }).then(function(response){
                 delete localCtrl.localisedAudio[moduleKey][audioKey]["lang"][langKey];
                 console.log("Success : ", response)
+            }, function(error){
+                console.log(error)
             })
         }
 
@@ -109,6 +113,8 @@
                 console.log(response.data)
                 $('#'+audioKey).collapse('toggle');
                 localCtrl.localisedAudio[moduleKey][audioKey]["lang"][language] = response.data[moduleKey][audioKey]["lang"][language];
+            }, function(error){
+                console.log(error)
             })
         }
 
@@ -128,10 +134,12 @@
                 localCtrl.localisedAudio[soundModule.moduleName] = response.data[soundModule.moduleName];
                 console.log("Success : ", response)
                 $('#soundModal').modal('hide')
+            },function(error){
+                console.log(error)
             })
         }
 
-        function showAddAudioPanel(id) {
+        function toggleCollapsed(id) {
             $('#'+id).collapse('toggle');
         }
     }

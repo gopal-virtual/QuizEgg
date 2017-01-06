@@ -47,13 +47,15 @@ function deleteSound (req, res){
             console.log(data)
             fs.writeFile(file, JSON.stringify(data), 'utf8', function(err) {
                 if(err) {
-                    res.end(JSON.stringify({"error" : err}));
+                    res.writeHead(400, {'Content-Type': 'text/json'});
+                    return res.end(JSON.stringify({"error" : err}));
                 }
                 else{
                     fs.unlink(filePath, (err) => {
                       if (err) throw err;
                       console.log('successfully deleted'+filePath);
-                      res.end(JSON.stringify(data));
+                      res.writeHead(204);
+                      return res.end();
                     });
                 }
             })
@@ -73,15 +75,26 @@ function addSoundModule (req, res) {
         fs.readFile(file, 'utf8', function(err, data) {
             data = JSON.parse(data);
             for(var sound in soundData.soundModule){
-                data[soundData.module][sound] = soundData.soundModule[sound];
+                if(!data[soundData.module][sound]){
+                    data[soundData.module][sound] = soundData.soundModule[sound];
+                }
+                else{
+                    res.writeHead(409, {'Content-Type': 'text/json'});
+                    res.end(JSON.stringify({"Conflict" : "Sound key already exists"}));
+                    return;
+                }
             }
             console.log(data)
             fs.writeFile(file, JSON.stringify(data), 'utf8', function(err) {
                 if(err) {
+                    res.writeHead(400, {'Content-Type': 'text/json'});
                     res.end(JSON.stringify({"error" : err}));
+                    return;
                 }
                 else{
+                    res.writeHead(201, {'Content-Type': 'text/json'});
                     res.end(JSON.stringify(data));
+                    return;
                 }
             })
         });
@@ -103,10 +116,14 @@ function addLangAudio(req, res) {
             data[audioData.module][audioData.audio]['lang'][audioData.language] = audioData.filename;
             fs.writeFile(file, JSON.stringify(data), 'utf8', function(err) {
                 if(err) {
+                    res.writeHead(400, {'Content-Type': 'text/json'});
                     res.end(JSON.stringify({"error" : err}));
+                    return;
                 }
                 else{
+                    res.writeHead(201, {'Content-Type': 'text/json'});
                     res.end(JSON.stringify(data));
+                    return;
                 }
             })
         });
@@ -128,18 +145,24 @@ function addModule(req, res) {
                     console.log('creating : ',audioData)
                     if (err) {
                         if (err.code === "EEXIST") {
-                            res.end(JSON.stringify({error : 'file already exists'}));
+                            res.writeHead(409, {'Content-Type': 'text/json'});
+                            res.end(JSON.stringify({'Conflict' : 'The file already exists'}));
                             return;
                         } else {
                             throw err;
+                            return;
                         }
                     }
                     fs.write(fd, JSON.stringify(audioData), function(err) {
                         if(err) {
+                            res.writeHead(400, {'Content-Type': 'text/json'});
                             res.end(JSON.stringify({"error" : err}));
+                            return;
                         }
                         else{
+                            res.writeHead(201, {'Content-Type': 'text/json'});
                             res.end(JSON.stringify(audioData));
+                            return;
                         }
                     });
                     fs.close(fd, function(err) {
@@ -153,10 +176,13 @@ function addModule(req, res) {
 function uploadFile(req,res){
     upload(req,res,function(err) {
         if(err) {
-            return res.end("Error uploading file.");
+            res.writeHead(400, {'Content-Type': 'text/json'});
+            return res.end({"error":"Error uploading file."});
         }
         // file details to be used after upload
+        res.writeHead(201, {'Content-Type': 'text/json'});
         res.end(JSON.stringify(req.file));
+        return;
     });
 }
 function getJson(req, res) {
@@ -176,7 +202,7 @@ function downloadFile(req, res) {
 }
 // read file
 function readAllFile(dir, response) {
-  response.writeHead(200, {"Content-Type": "text/json"});
+
   var data = {};
   fs.readdir(dir, (err, files) => {
       async.eachSeries(
@@ -195,7 +221,14 @@ function readAllFile(dir, response) {
               });
           },
           function(err) {
-              response.end(JSON.stringify(data))
+              if(err){
+                  response.writeHead(400, {'Content-Type': 'text/json'});
+                  return response.end(JSON.stringify({"error":err}))
+              }
+              else{
+                  response.writeHead(200, {"Content-Type": "text/json"});
+                  response.end(JSON.stringify(data))
+              }
           }
       )
   })
