@@ -16,8 +16,10 @@ app.put('/add/soundmodule', addSoundModule);
 app.get('/download', downloadFile);
 app.delete('/delete/sound', deleteSound);
 app.get('/get/json', getJson);
+app.get('/get/textjson', getTextJson);
 app.post('/add/file', uploadFile);
 app.put('/add/langaudio', addLangAudio);
+app.put('/add/langtext', addLangText);
 app.patch('/patch/langcode', patchLangCode);
 app.get('/', home);
 
@@ -118,7 +120,6 @@ function addSoundModule(req, res) {
 }
 
 function addLangAudio(req, res) {
-    // get module name, audio key, language key from request
     var jsonString = '';
 
     req.on('data', function(data) {
@@ -131,6 +132,40 @@ function addLangAudio(req, res) {
         fs.readFile(file, 'utf8', function(err, data) {
             data = JSON.parse(data);
             data[audioData.module][audioData.audio]['lang'][audioData.language] = audioData.filename;
+            fs.writeFile(file, JSON.stringify(data), 'utf8', function(err) {
+                if (err) {
+                    res.writeHead(400, {
+                        'Content-Type': 'text/json'
+                    });
+                    res.end(JSON.stringify({
+                        "error": err
+                    }));
+                    return;
+                } else {
+                    res.writeHead(201, {
+                        'Content-Type': 'text/json'
+                    });
+                    res.end(JSON.stringify(data));
+                    return;
+                }
+            })
+        });
+    });
+}
+
+function addLangText(req, res) {
+    var jsonString = '';
+
+    req.on('data', function(data) {
+        jsonString += data;
+    });
+
+    req.on('end', function() {
+        textData = JSON.parse(jsonString);
+        var file = "./textdb/" + textData.module + ".json";
+        fs.readFile(file, 'utf8', function(err, data) {
+            data = JSON.parse(data);
+            data[textData.module][textData.text]['lang'][textData.language] = textData.type;
             fs.writeFile(file, JSON.stringify(data), 'utf8', function(err) {
                 if (err) {
                     res.writeHead(400, {
@@ -229,6 +264,11 @@ function uploadFile(req, res) {
 function getJson(req, res) {
     var dir = './db/';
     readAllFile(dir, res);
+}
+
+function getTextJson(req, res) {
+    var dir = './textdb/';
+    readAllTextFile(dir, res);
 }
 
 function downloadFile(req, res) {
@@ -406,6 +446,45 @@ function readAllFile(dir, response) {
         )
     })
 }
+
+function readAllTextFile(dir, response) {
+
+    var data = {};
+    fs.readdir(dir, (err, files) => {
+        async.eachSeries(
+            files,
+            function(filename, cb) {
+                fs.readFile(dir + filename, function(err, content) {
+                    if (!err) {
+                        var filecontent = JSON.parse(content);
+                        for (key in filecontent) {
+                            if (filecontent.hasOwnProperty(key)) {
+                                data[key] = filecontent[key]
+                            }
+                        }
+                    }
+                    cb(err);
+                });
+            },
+            function(err) {
+                if (err) {
+                    response.writeHead(400, {
+                        'Content-Type': 'text/json'
+                    });
+                    return response.end(JSON.stringify({
+                        "error": err
+                    }))
+                } else {
+                    response.writeHead(200, {
+                        "Content-Type": "text/json"
+                    });
+                    response.end(JSON.stringify(data))
+                }
+            }
+        )
+    })
+}
+
 var storage = multer.diskStorage({
     destination: function(req, file, callback) {
         callback(null, './uploads');

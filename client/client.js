@@ -46,6 +46,7 @@
     function LocalisedController($http, fileUpload) {
         var localCtrl = this;
         localCtrl.uploadAudio = uploadAudio;
+        localCtrl.uploadText = uploadText;
         localCtrl.addSoundModule = addSoundModule;
         localCtrl.toggleCollapsed = toggleCollapsed;
         localCtrl.removeAudio = removeAudio;
@@ -64,6 +65,16 @@
         }).then(function successCallback(response) {
             console.log(response.data)
             localCtrl.localisedAudio = response.data;
+        }, function errorCallback(response) {
+            console.log(response)
+        });
+
+        $http({
+            method: 'GET',
+            url: '/get/textjson'
+        }).then(function successCallback(response) {
+            console.log(response.data)
+            localCtrl.localisedText = response.data;
         }, function errorCallback(response) {
             console.log(response)
         });
@@ -125,6 +136,28 @@
                 console.log(id)
                 $(id).collapse('toggle');
                 localCtrl.localisedAudio[moduleKey][audioKey]['lang'][language] = response.data[moduleKey][audioKey]['lang'][language];
+            }, function(error){
+                console.log(error);
+                $( "<div class='alert alert-danger alert-dismissible' role='alert'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button><strong>Error : </strong>"+error.data.error+"</div>" ).appendTo( event.target );
+            })
+        }
+        function uploadText(moduleKey, textKey, text, event) {
+            console.log(event.target)
+            $http({
+                method: 'PUT',
+                url: '/add/langtext',
+                data : {
+                    module : moduleKey,
+                    text : textKey,
+                    language : text.language,
+                    type : text.text
+                }
+            })
+            .then(function(response){
+                var id = '#' + localCtrl.removeSpace(moduleKey+textKey);
+                console.log(id)
+                $(id).collapse('toggle');
+                localCtrl.localisedText[moduleKey][textKey]['lang'][text.language] = response.data[moduleKey][textKey]['lang'][text.language];
             }, function(error){
                 console.log(error);
                 $( "<div class='alert alert-danger alert-dismissible' role='alert'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button><strong>Error : </strong>"+error.data.error+"</div>" ).appendTo( event.target );
