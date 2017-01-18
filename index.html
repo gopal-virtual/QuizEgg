@@ -186,7 +186,7 @@
                                                 <div class="list-group">
                                                     <div class="list-group-item truncate" ng-repeat="(langKey, langText) in textValue.lang">
                                                         <!-- remove text is disable for now -->
-                                                        <!-- <i class="glyphicon glyphicon-remove-sign text-danger pull-right" ng-click="localCtrl.removeText(moduleKey, textKey, langKey)"></i> -->
+                                                        <i class="glyphicon glyphicon-remove-sign text-danger pull-right" ng-click="localCtrl.removeText(moduleKey, textKey, langKey)"></i>
                                                         <span class="label label-primary" ng-bind="::localCtrl.language[langKey]"></span>
                                                         <span ng-bind="langText"></span>
                                                     </div>

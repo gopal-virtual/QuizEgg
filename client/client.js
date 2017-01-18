@@ -50,6 +50,7 @@
         localCtrl.addSoundModule = addSoundModule;
         localCtrl.toggleCollapsed = toggleCollapsed;
         localCtrl.removeAudio = removeAudio;
+        localCtrl.removeText = removeText;
         localCtrl.addModule = addModule;
         localCtrl.removeSpace = removeSpace;
         localCtrl.language = {
@@ -110,6 +111,23 @@
                 }
             }).then(function(response){
                 delete localCtrl.localisedAudio[moduleKey][audioKey]['lang'][langKey];
+                console.log('Success : ', response)
+            }, function(error){
+                console.log(error)
+            })
+        }
+        function removeText(moduleKey, textKey, langKey) {
+
+            return $http({
+                method: 'DELETE',
+                url: '/delete/text',
+                data : {
+                    module : moduleKey,
+                    text : textKey,
+                    lang : langKey
+                }
+            }).then(function(response){
+                delete localCtrl.localisedText[moduleKey][textKey]['lang'][langKey];
                 console.log('Success : ', response)
             }, function(error){
                 console.log(error)

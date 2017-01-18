@@ -15,6 +15,7 @@ app.put('/add/soundmodule', addSoundModule);
 // public
 app.get('/download', downloadFile);
 app.delete('/delete/sound', deleteSound);
+app.delete('/delete/text', deleteText);
 app.get('/get/json', getJson);
 app.get('/get/textjson', getTextJson);
 app.post('/add/file', uploadFile);
@@ -68,6 +69,37 @@ function deleteSound(req, res) {
                     });
                 }
             })
+        });
+    });
+}
+
+function deleteText(req, res) {
+    var jsonString = '';
+
+    req.on('data', function(data) {
+        jsonString += data;
+    });
+
+    req.on('end', function() {
+        textData = JSON.parse(jsonString);
+        var file = "./textdb/" + textData.module + ".json";
+        fs.readFile(file, 'utf8', function(err, data) {
+            data = JSON.parse(data);
+            delete data[textData.module][textData.text]["lang"][textData.lang];
+            fs.writeFile(file, JSON.stringify(data), 'utf8', function(err) {
+                if (err) {
+                    res.writeHead(400, {
+                        'Content-Type': 'text/json'
+                    });
+                    return res.end(JSON.stringify({
+                        "error": err
+                    }));
+                } else {
+                    console.log('successfully deleted');
+                    res.writeHead(204);
+                    return res.end();
+                }
+            });
         });
     });
 }
