@@ -51,6 +51,12 @@
         localCtrl.removeAudio = removeAudio;
         localCtrl.addModule = addModule;
         localCtrl.removeSpace = removeSpace;
+        localCtrl.language = {
+            'hi' : 'hindi',
+            'ta' : 'tamil',
+            'gu' : 'gujarati',
+            'te' : 'telugu'
+        }
 
         $http({
             method: 'GET',
@@ -74,7 +80,7 @@
                 data : data
             }).then(function(response){
                 localCtrl.localisedAudio[moduleName] = response.data[moduleName];
-                console.log("Success : ", response)
+                console.log('Success : ', response)
                 $('#moduleModal').modal('hide')
             }, function(error){
                 console.log(error)
@@ -92,15 +98,16 @@
                     lang : langKey
                 }
             }).then(function(response){
-                delete localCtrl.localisedAudio[moduleKey][audioKey]["lang"][langKey];
-                console.log("Success : ", response)
+                delete localCtrl.localisedAudio[moduleKey][audioKey]['lang'][langKey];
+                console.log('Success : ', response)
             }, function(error){
                 console.log(error)
             })
         }
 
-        function uploadAudio(moduleKey, audioKey, language) {
-            fileUpload.uploadFileToUrl(localCtrl.audio.file, "/add/file")
+        function uploadAudio(moduleKey, audioKey, language, event) {
+            console.log(event.target)
+            fileUpload.uploadFileToUrl(localCtrl.audio.file, '/add/file')
             .then(function(response){
                 return $http({
                     method: 'PUT',
@@ -114,18 +121,20 @@
                 })
             })
             .then(function(response){
-                console.log(response.data)
-                $('#'+audioKey).collapse('toggle');
-                localCtrl.localisedAudio[moduleKey][audioKey]["lang"][language] = response.data[moduleKey][audioKey]["lang"][language];
+                var id = '#' + localCtrl.removeSpace(moduleKey+audioKey);
+                console.log(id)
+                $(id).collapse('toggle');
+                localCtrl.localisedAudio[moduleKey][audioKey]['lang'][language] = response.data[moduleKey][audioKey]['lang'][language];
             }, function(error){
-                console.log(error)
+                console.log(error);
+                $( "<div class='alert alert-danger alert-dismissible' role='alert'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button><strong>Error : </strong>"+error.data.error+"</div>" ).appendTo( event.target );
             })
         }
 
         function addSoundModule(soundModule) {
             var data = {}
-            data["module"] = soundModule.moduleName;
-            data["soundModule"] = {};
+            data['module'] = soundModule.moduleName;
+            data['soundModule'] = {};
             data.soundModule[soundModule.soundKey] = {
                 label : soundModule.label,
                 lang : {}
@@ -136,7 +145,7 @@
                 data : data
             }).then(function(response){
                 localCtrl.localisedAudio[soundModule.moduleName] = response.data[soundModule.moduleName];
-                console.log("Success : ", response)
+                console.log('Success : ', response)
                 $('#soundModal').modal('hide')
             },function(error){
                 console.log(error)
