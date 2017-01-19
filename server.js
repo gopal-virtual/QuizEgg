@@ -24,7 +24,7 @@ app.put('/add/langtext', addLangText);
 app.patch('/patch/langcode', patchLangCode);
 app.get('/', home);
 
-var server = app.listen(3000, 'localhost', function() {
+var server = app.listen(3000, '0.0.0.0', function() {
 
     var host = server.address().address
     var port = server.address().port
@@ -305,22 +305,25 @@ function getTextJson(req, res) {
 
 function downloadFile(req, res) {
     var dir = './db/';
+    var upload = './uploads/';
     var data = [];
     var language = req.query.lang || false;
-    fs.readdir(dir, (err, files) => {
-        async.eachSeries(
-            files,
-            function(filename, cb) {
-                fs.readFile(dir + filename, function(err, content) {
-                    if (!err) {
-                        var filecontent = JSON.parse(content);
-                        for (key in filecontent) {
-                            if (filecontent.hasOwnProperty(key)) {
-                                for (var audioModule in filecontent[key]) {
-                                    if (filecontent[key].hasOwnProperty(audioModule)) {
-                                        for (var prop in filecontent[key]) {
-                                            if (filecontent[key][prop].hasOwnProperty("lang")) {
-                                                if(language){
+
+    if(language){
+        fs.readdir(dir, (err, files) => {
+            console.log(files)
+            async.eachSeries(
+                files,
+                function(filename, cb) {
+                    fs.readFile(dir + filename, function(err, content) {
+                        if (!err) {
+                            var filecontent = JSON.parse(content);
+                            for (key in filecontent) {
+                                if (filecontent.hasOwnProperty(key)) {
+                                    for (var audioModule in filecontent[key]) {
+                                        if (filecontent[key].hasOwnProperty(audioModule)) {
+                                            for (var prop in filecontent[key]) {
+                                                if (filecontent[key][prop].hasOwnProperty("lang")) {
                                                     if (filecontent[key][prop]["lang"].hasOwnProperty(language)) {
                                                         data.push({
                                                             "path" : './uploads/' + filecontent[key][prop]["lang"][language],
@@ -328,59 +331,50 @@ function downloadFile(req, res) {
                                                         })
                                                     }
                                                 }
-                                                else {
-                                                    for (var lang in filecontent[key][prop]["lang"]) {
-                                                        if (filecontent[key][prop]["lang"].hasOwnProperty(lang)) {
-                                                            data.push({
-                                                                "path" : './uploads/' + filecontent[key][prop]["lang"][lang],
-                                                                "name" : filecontent[key][prop]["lang"][lang]
-                                                            })
-                                                        }
-                                                    }
+                                                else{
+                                                    console.log("no lang property")
                                                 }
-                                            }
-                                            else{
-                                                console.log("no lang property")
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    cb(err);
-                });
-            },
-            function(err) {
-                if (err) {
-                    res.writeHead(400, {
-                        'Content-Type': 'text/json'
+                        cb(err);
                     });
-                    return res.end(JSON.stringify({
-                        "error": err
-                    }))
-                } else {
-                    if(data.length)
-                        return res.zip(data);
-                    else{
-                        res.writeHead(404, {
+                },
+                function(err) {
+                    if (err) {
+                        res.writeHead(400, {
                             'Content-Type': 'text/json'
                         });
-                        return res.end(JSON.stringify({"Not found": "no files found for the specified language"}))
+                        return res.end(JSON.stringify({
+                            "error": err
+                        }))
+                    } else {
+                        if(data.length)
+                        return res.zip(data);
+                        else{
+                            res.writeHead(404, {
+                                'Content-Type': 'text/json'
+                            });
+                            return res.end(JSON.stringify({"Not found": "no files found for the specified language"}))
+                        }
                     }
                 }
-            }
-        )
-    })
-    // fs.readdir(dir, (err, files) => {
-    //     files.forEach(file => {
-    //         data.push({
-    //             "path": dir + file,
-    //             "name": file
-    //         })
-    //     })
-    //     res.zip(data);
-    // })
+            )
+        })
+    }else{
+        fs.readdir(upload, (err, files) => {
+            files.forEach(file => {
+                data.push({
+                    "path": upload + file,
+                    "name": file
+                })
+            })
+            return res.zip(data);
+        })
+    }
 }
 
 function patchLangCode( req, res ){
@@ -508,7 +502,8 @@ function readAllTextFile(dir, response) {
                     }))
                 } else {
                     response.writeHead(200, {
-                        "Content-Type": "text/json"
+                        "Content-Type": "text/json",
+                        'Content-Type': 'application/xhtml+xml; charset=utf-8'
                     });
                     response.end(JSON.stringify(data))
                 }
