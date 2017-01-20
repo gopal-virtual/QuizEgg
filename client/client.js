@@ -57,7 +57,10 @@
             'hi' : 'hindi',
             'ta' : 'tamil',
             'gu' : 'gujarati',
-            'te' : 'telugu'
+            'te' : 'telugu',
+            'bn' : 'bengali',
+            'kn' : 'kannada',
+            'mr' : 'marathi'
         }
 
         $http({
